@@ -1,6 +1,7 @@
 from micropython import const
 
 from trezor.crypto import slip39
+from trezor.messages import BackupType
 
 from apps.common.storage import common, recovery_shares
 
@@ -24,8 +25,18 @@ _SLIP39_GROUP_THRESHOLD    = const(0x08)  # int
 _BACKUP_TYPE               = const(0x09)  # int
 # fmt: on
 
+# Default values:
+_DEFAULT_SLIP39_GROUP_COUNT = const(1)
+_DEFAULT_SLIP39_GROUP_THRESHOLD = const(1)
+_DEFAULT_BACKUP_TYPE = BackupType.Bip39
+
 if False:
     from typing import List, Optional
+
+
+def _require_progress():
+    if not is_in_progress():
+        raise RuntimeError
 
 
 def set_in_progress(val: bool) -> None:
@@ -37,67 +48,88 @@ def is_in_progress() -> bool:
 
 
 def set_dry_run(val: bool) -> None:
+    _require_progress()
     common.set_bool(_NAMESPACE, _DRY_RUN, val)
 
 
 def is_dry_run() -> bool:
+    _require_progress()
     return common.get_bool(_NAMESPACE, _DRY_RUN)
 
 
 def set_word_count(count: int) -> None:
+    _require_progress()
     common.set_uint8(_NAMESPACE, _WORD_COUNT, count)
 
 
 def get_word_count() -> Optional[int]:
+    _require_progress()
     return common.get_uint8(_NAMESPACE, _WORD_COUNT)
 
 
 def set_backup_type(backup_type: EnumTypeBackupType) -> None:
+    _require_progress()
     common.set_uint8(_NAMESPACE, _BACKUP_TYPE, backup_type)
 
 
-def get_backup_type() -> Optional[EnumTypeBackupType]:
-    return common.get_uint8(_NAMESPACE, _BACKUP_TYPE)
+def get_backup_type() -> EnumTypeBackupType:
+    _require_progress()
+    return common.get_uint8(_NAMESPACE, _BACKUP_TYPE) or _DEFAULT_BACKUP_TYPE
 
 
 def set_slip39_identifier(identifier: int) -> None:
+    _require_progress()
     common.set_uint16(_NAMESPACE, _SLIP39_IDENTIFIER, identifier)
 
 
-def get_slip39_identifier() -> Optional[int]:
+def get_slip39_identifier() -> int:
+    _require_progress()
     return common.get_uint16(_NAMESPACE, _SLIP39_IDENTIFIER)
 
 
 def set_slip39_threshold(threshold: int) -> None:
+    _require_progress()
     common.set_uint8(_NAMESPACE, _SLIP39_THRESHOLD, threshold)
 
 
-def get_slip39_threshold() -> Optional[int]:
+def get_slip39_threshold() -> int:
+    _require_progress()
     return common.get_uint8(_NAMESPACE, _SLIP39_THRESHOLD)
 
 
 def set_slip39_iteration_exponent(exponent: int) -> None:
+    _require_progress()
     common.set_uint8(_NAMESPACE, _SLIP39_ITERATION_EXPONENT, exponent)
 
 
-def get_slip39_iteration_exponent() -> Optional[int]:
+def get_slip39_iteration_exponent() -> int:
+    _require_progress()
     return common.get_uint8(_NAMESPACE, _SLIP39_ITERATION_EXPONENT)
 
 
 def set_slip39_group_count(group_count: int) -> None:
+    _require_progress()
     common.set_uint8(_NAMESPACE, _SLIP39_GROUP_COUNT, group_count)
 
 
-def get_slip39_group_count() -> Optional[int]:
-    return common.get_uint8(_NAMESPACE, _SLIP39_GROUP_COUNT)
+def get_slip39_group_count() -> int:
+    _require_progress()
+    return (
+        common.get_uint8(_NAMESPACE, _SLIP39_GROUP_COUNT) or _DEFAULT_SLIP39_GROUP_COUNT
+    )
 
 
 def set_slip39_group_threshold(group_threshold: int) -> None:
+    _require_progress()
     common.set_uint8(_NAMESPACE, _SLIP39_GROUP_THRESHOLD, group_threshold)
 
 
-def get_slip39_group_threshold() -> Optional[int]:
-    return common.get_uint8(_NAMESPACE, _SLIP39_GROUP_THRESHOLD)
+def get_slip39_group_threshold() -> int:
+    _require_progress()
+    return (
+        common.get_uint8(_NAMESPACE, _SLIP39_GROUP_THRESHOLD)
+        or _DEFAULT_SLIP39_GROUP_THRESHOLD
+    )
 
 
 def set_slip39_remaining_shares(shares_remaining: int, group_index: int) -> None:
@@ -107,10 +139,9 @@ def set_slip39_remaining_shares(shares_remaining: int, group_index: int) -> None
     0x10 (16) was chosen as the default value because it's the max
     share count for a group.
     """
+    _require_progress()
     remaining = common.get(_NAMESPACE, _REMAINING)
     group_count = get_slip39_group_count()
-    if not group_count:
-        raise RuntimeError
     if remaining is None:
         remaining = bytearray([slip39.MAX_SHARE_COUNT] * group_count)
     remaining = bytearray(remaining)
@@ -118,7 +149,8 @@ def set_slip39_remaining_shares(shares_remaining: int, group_index: int) -> None
     common.set(_NAMESPACE, _REMAINING, remaining)
 
 
-def get_slip39_remaining_shares(group_index: int) -> Optional[int]:
+def get_slip39_remaining_shares(group_index: int) -> int:
+    _require_progress()
     remaining = common.get(_NAMESPACE, _REMAINING)
     if remaining is None or remaining[group_index] == slip39.MAX_SHARE_COUNT:
         return None
@@ -127,6 +159,7 @@ def get_slip39_remaining_shares(group_index: int) -> Optional[int]:
 
 
 def fetch_slip39_remaining_shares() -> Optional[List[int]]:
+    _require_progress()
     remaining = common.get(_NAMESPACE, _REMAINING)
     if not remaining:
         return None
@@ -139,6 +172,7 @@ def fetch_slip39_remaining_shares() -> Optional[List[int]]:
 
 
 def end_progress() -> None:
+    _require_progress()
     common.delete(_NAMESPACE, _IN_PROGRESS)
     common.delete(_NAMESPACE, _DRY_RUN)
     common.delete(_NAMESPACE, _WORD_COUNT)
