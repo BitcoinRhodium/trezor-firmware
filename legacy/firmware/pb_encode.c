@@ -129,7 +129,7 @@ static bool checkreturn encode_array(pb_ostream_t *stream, const pb_field_t *fie
                          const void *pData, size_t count, pb_encoder_t func)
 {
     size_t i;
-    const void *p;
+    const void *p = NULL;
     size_t size;
     
     if (count == 0)

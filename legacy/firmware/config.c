@@ -85,7 +85,7 @@ static const uint32_t PIN_EMPTY = 1;
 static uint32_t config_uuid[UUID_SIZE / sizeof(uint32_t)];
 _Static_assert(sizeof(config_uuid) == UUID_SIZE, "config_uuid has wrong size");
 
-char config_uuid_str[2 * UUID_SIZE + 1];
+char config_uuid_str[(2 * UUID_SIZE) + 1] = {0};
 
 /*
  Old storage layout:
@@ -571,7 +571,7 @@ const uint8_t *config_getSeed(bool usePassphrase) {
   }
 
   // if storage has mnemonic, convert it to node and use it
-  char mnemonic[MAX_MNEMONIC_LEN + 1];
+  char mnemonic[MAX_MNEMONIC_LEN + 1] = {0};
   if (config_getMnemonic(mnemonic, sizeof(mnemonic))) {
     if (usePassphrase && !protectPassphrase()) {
       memzero(mnemonic, sizeof(mnemonic));
@@ -640,7 +640,7 @@ bool config_getRootNode(HDNode *node, const char *curve, bool usePassphrase) {
     if (passphrase_protection && sectrue == sessionPassphraseCached &&
         sessionPassphrase[0] != '\0') {
       // decrypt hd node
-      uint8_t secret[64];
+      uint8_t secret[64] = {0};
       PBKDF2_HMAC_SHA512_CTX pctx;
       char oldTiny = usbTiny(1);
       pbkdf2_hmac_sha512_Init(&pctx, (const uint8_t *)sessionPassphrase,
@@ -730,18 +730,18 @@ bool config_getMnemonic(char *dest, uint16_t dest_size) {
  */
 bool config_containsMnemonic(const char *mnemonic) {
   uint16_t len = 0;
-  uint8_t stored_mnemonic[MAX_MNEMONIC_LEN];
+  uint8_t stored_mnemonic[MAX_MNEMONIC_LEN] = {0};
   if (sectrue != storage_get(KEY_MNEMONIC, stored_mnemonic,
                              sizeof(stored_mnemonic), &len)) {
     return false;
   }
 
   // Compare the digests to mitigate side-channel attacks.
-  uint8_t digest_stored[SHA256_DIGEST_LENGTH];
+  uint8_t digest_stored[SHA256_DIGEST_LENGTH] = {0};
   sha256_Raw(stored_mnemonic, len, digest_stored);
   memzero(stored_mnemonic, sizeof(stored_mnemonic));
 
-  uint8_t digest_input[SHA256_DIGEST_LENGTH];
+  uint8_t digest_input[SHA256_DIGEST_LENGTH] = {0};
   sha256_Raw((const uint8_t *)mnemonic, strnlen(mnemonic, MAX_MNEMONIC_LEN),
              digest_input);
 

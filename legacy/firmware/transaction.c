@@ -105,8 +105,8 @@ bool compute_address(const CoinInfo *coin, InputScriptType script_type,
                      const HDNode *node, bool has_multisig,
                      const MultisigRedeemScriptType *multisig,
                      char address[MAX_ADDR_SIZE]) {
-  uint8_t raw[MAX_ADDR_RAW_SIZE];
-  uint8_t digest[32];
+  uint8_t raw[MAX_ADDR_RAW_SIZE] = {0};
+  uint8_t digest[32] = {0};
   size_t prelen;
 
   if (has_multisig) {
@@ -200,7 +200,7 @@ int compile_output(const CoinInfo *coin, const HDNode *root, TxOutputType *in,
   memzero(out, sizeof(TxOutputBinType));
   out->amount = in->amount;
   out->decred_script_version = in->decred_script_version;
-  uint8_t addr_raw[MAX_ADDR_RAW_SIZE];
+  uint8_t addr_raw[MAX_ADDR_RAW_SIZE] = {0};
   size_t addr_raw_len;
 
   if (in->script_type == OutputScriptType_PAYTOOPRETURN) {
@@ -313,7 +313,7 @@ int compile_output(const CoinInfo *coin, const HDNode *root, TxOutputType *in,
       return 0;
     }
   } else if (coin->bech32_prefix) {
-    int witver;
+    int witver = 0;
     if (!segwit_addr_decode(&witver, addr_raw, &addr_raw_len,
                             coin->bech32_prefix, in->address)) {
       return 0;
@@ -397,7 +397,7 @@ uint32_t compile_script_multisig_hash(const CoinInfo *coin,
   Hasher hasher;
   hasher_Init(&hasher, coin->curve->hasher_script);
 
-  uint8_t d[2];
+  uint8_t d[2] = {0};
   d[0] = 0x50 + m;
   hasher_Update(&hasher, d, 1);
   for (uint32_t i = 0; i < n; i++) {
@@ -800,7 +800,7 @@ void tx_hash_final(TxStruct *t, uint8_t *hash, bool reverse) {
 }
 
 static uint32_t tx_input_script_size(const TxInputType *txinput) {
-  uint32_t input_script_size;
+  uint32_t input_script_size = 0;
   if (txinput->has_multisig) {
     uint32_t multisig_script_size =
         TXSIZE_MULTISIGSCRIPT +
@@ -860,8 +860,8 @@ uint32_t tx_output_weight(const CoinInfo *coin, const TxOutputType *txoutput) {
           txoutput->has_multisig ? TXSIZE_P2SCRIPT : TXSIZE_P2PKHASH;
     }
   } else {
-    uint8_t addr_raw[MAX_ADDR_RAW_SIZE];
-    int witver;
+    uint8_t addr_raw[MAX_ADDR_RAW_SIZE] = {0};
+    int witver = 0;
     size_t addr_raw_len;
     if (coin->cashaddr_prefix &&
         cash_addr_decode(addr_raw, &addr_raw_len, coin->cashaddr_prefix,
