@@ -51,7 +51,8 @@ bool b58tobin(void *bin, size_t *binszp, const char *b58) {
   const unsigned char *b58u = (const unsigned char *)b58;
   unsigned char *binu = bin;
   size_t outisz = (binsz + 3) / 4;
-  uint32_t outi[outisz] = {0};
+  uint32_t outi[outisz];
+  memset(outi, 0, sizeof(outi));
   uint64_t t = 0;
   uint32_t c = 0;
   size_t i = 0, j = 0;
@@ -155,7 +156,7 @@ bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz) {
   while (zcount < (ssize_t)binsz && !bin[zcount]) ++zcount;
 
   size = (binsz - zcount) * 138 / 100 + 1;
-  uint8_t buf[size] = {0};
+  uint8_t buf[size];
   memzero(buf, size);
 
   for (i = zcount, high = size - 1; i < (ssize_t)binsz; ++i, high = j) {
@@ -188,7 +189,8 @@ int base58_encode_check(const uint8_t *data, int datalen,
   if (datalen > 128) {
     return 0;
   }
-  uint8_t buf[datalen + 32] = {0};
+  uint8_t buf[datalen + 32];
+  memset(buf, 0, sizeof(buf));
   uint8_t *hash = buf + datalen;
   memcpy(buf, data, datalen);
   hasher_Raw(hasher_type, data, datalen, hash);
@@ -203,7 +205,8 @@ int base58_decode_check(const char *str, HasherType hasher_type, uint8_t *data,
   if (datalen > 128) {
     return 0;
   }
-  uint8_t d[datalen + 4] = {0};
+  uint8_t d[datalen + 4];
+  memset(d, 0, sizeof(d));
   size_t res = datalen + 4;
   if (b58tobin(d, &res, str) != true) {
     return 0;
