@@ -30,7 +30,7 @@
 void pbkdf2_hmac_sha256_Init(PBKDF2_HMAC_SHA256_CTX *pctx, const uint8_t *pass,
                              int passlen, const uint8_t *salt, int saltlen,
                              uint32_t blocknr) {
-  SHA256_CTX ctx;
+  SHA256_CTX ctx = {0};
 #if BYTE_ORDER == LITTLE_ENDIAN
   REVERSE32(blocknr, blocknr);
 #endif
@@ -91,7 +91,7 @@ void pbkdf2_hmac_sha256(const uint8_t *pass, int passlen, const uint8_t *salt,
     PBKDF2_HMAC_SHA256_CTX pctx;
     pbkdf2_hmac_sha256_Init(&pctx, pass, passlen, salt, saltlen, blocknr);
     pbkdf2_hmac_sha256_Update(&pctx, iterations);
-    uint8_t digest[SHA256_DIGEST_LENGTH];
+    uint8_t digest[SHA256_DIGEST_LENGTH] = {0};
     pbkdf2_hmac_sha256_Final(&pctx, digest);
     uint32_t key_offset = (blocknr - 1) * SHA256_DIGEST_LENGTH;
     if (blocknr < blocks_count) {
@@ -167,7 +167,7 @@ void pbkdf2_hmac_sha512(const uint8_t *pass, int passlen, const uint8_t *salt,
     PBKDF2_HMAC_SHA512_CTX pctx;
     pbkdf2_hmac_sha512_Init(&pctx, pass, passlen, salt, saltlen, blocknr);
     pbkdf2_hmac_sha512_Update(&pctx, iterations);
-    uint8_t digest[SHA512_DIGEST_LENGTH];
+    uint8_t digest[SHA512_DIGEST_LENGTH] = {0};
     pbkdf2_hmac_sha512_Final(&pctx, digest);
     uint32_t key_offset = (blocknr - 1) * SHA512_DIGEST_LENGTH;
     if (blocknr < blocks_count) {

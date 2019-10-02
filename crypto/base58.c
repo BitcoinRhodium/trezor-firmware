@@ -51,14 +51,14 @@ bool b58tobin(void *bin, size_t *binszp, const char *b58) {
   const unsigned char *b58u = (const unsigned char *)b58;
   unsigned char *binu = bin;
   size_t outisz = (binsz + 3) / 4;
-  uint32_t outi[outisz];
-  uint64_t t;
-  uint32_t c;
-  size_t i, j;
+  uint32_t outi[outisz] = {0};
+  uint64_t t = 0;
+  uint32_t c = 0;
+  size_t i = 0, j = 0;
   uint8_t bytesleft = binsz % 4;
   uint32_t zeromask = bytesleft ? (0xffffffff << (bytesleft * 8)) : 0;
   unsigned zerocount = 0;
-  size_t b58sz;
+  size_t b58sz = 0;
 
   b58sz = strlen(b58);
 
@@ -130,9 +130,9 @@ bool b58tobin(void *bin, size_t *binszp, const char *b58) {
 
 int b58check(const void *bin, size_t binsz, HasherType hasher_type,
              const char *base58str) {
-  unsigned char buf[32];
+  unsigned char buf[32] = {0};
   const uint8_t *binc = bin;
-  unsigned i;
+  unsigned i = 0;
   if (binsz < 4) return -4;
   hasher_Raw(hasher_type, bin, binsz - 4, buf);
   if (memcmp(&binc[binsz - 4], buf, 4)) return -1;
@@ -148,14 +148,14 @@ int b58check(const void *bin, size_t binsz, HasherType hasher_type,
 
 bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz) {
   const uint8_t *bin = data;
-  int carry;
+  int carry = 0;
   ssize_t i, j, high, zcount = 0;
-  size_t size;
+  size_t size = 0;
 
   while (zcount < (ssize_t)binsz && !bin[zcount]) ++zcount;
 
   size = (binsz - zcount) * 138 / 100 + 1;
-  uint8_t buf[size];
+  uint8_t buf[size] = {0};
   memzero(buf, size);
 
   for (i = zcount, high = size - 1; i < (ssize_t)binsz; ++i, high = j) {
@@ -188,7 +188,7 @@ int base58_encode_check(const uint8_t *data, int datalen,
   if (datalen > 128) {
     return 0;
   }
-  uint8_t buf[datalen + 32];
+  uint8_t buf[datalen + 32] = {0};
   uint8_t *hash = buf + datalen;
   memcpy(buf, data, datalen);
   hasher_Raw(hasher_type, data, datalen, hash);
@@ -203,7 +203,7 @@ int base58_decode_check(const char *str, HasherType hasher_type, uint8_t *data,
   if (datalen > 128) {
     return 0;
   }
-  uint8_t d[datalen + 4];
+  uint8_t d[datalen + 4] = {0};
   size_t res = datalen + 4;
   if (b58tobin(d, &res, str) != true) {
     return 0;
@@ -218,9 +218,9 @@ int base58_decode_check(const char *str, HasherType hasher_type, uint8_t *data,
 
 #if USE_GRAPHENE
 int b58gphcheck(const void *bin, size_t binsz, const char *base58str) {
-  unsigned char buf[32];
+  unsigned char buf[32] = {0};
   const uint8_t *binc = bin;
-  unsigned i;
+  unsigned i = 0;
   if (binsz < 4) return -4;
   ripemd160(bin, binsz - 4, buf);  // No double SHA256, but a single RIPEMD160
   if (memcmp(&binc[binsz - 4], buf, 4)) return -1;
@@ -239,7 +239,7 @@ int base58gph_encode_check(const uint8_t *data, int datalen, char *str,
   if (datalen > 128) {
     return 0;
   }
-  uint8_t buf[datalen + 32];
+  uint8_t buf[datalen + 32] = {0};
   uint8_t *hash = buf + datalen;
   memcpy(buf, data, datalen);
   ripemd160(data, datalen, hash);  // No double SHA256, but a single RIPEMD160
@@ -253,7 +253,7 @@ int base58gph_decode_check(const char *str, uint8_t *data, int datalen) {
   if (datalen > 128) {
     return 0;
   }
-  uint8_t d[datalen + 4];
+  uint8_t d[datalen + 4] = {0};
   size_t res = datalen + 4;
   if (b58tobin(d, &res, str) != true) {
     return 0;
